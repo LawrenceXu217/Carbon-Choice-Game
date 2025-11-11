@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Choice - Game Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .game-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .game-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .game-header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .game-content {
+            padding: 40px;
+        }
+        
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Character Select */
+        .characters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .character-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 3px solid transparent;
+        }
+        
+        .character-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .character-card.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        .character-card:nth-child(2) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .character-card:nth-child(3) {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .character-card.locked {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            cursor: not-allowed;
+            position: relative;
+            overflow: visible;
+        }
+        
+        .character-card.locked:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .character-card.unlocked {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            animation: unlockPulse 0.8s ease-in-out;
+            cursor: pointer;
+        }
+        
+        @keyframes unlockPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .lock-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5em;
+            z-index: 10;
+        }
+        
+        .unlock-hint {
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.9);
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .unlock-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #2d3748;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            text-align: center;
+            z-index: 1000;
+            animation: popIn 0.5s ease-out;
+            max-width: 500px;
+        }
+        
+        @keyframes popIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .unlock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .unlock-icon-big {
+            font-size: 5em;
+            margin-bottom: 20px;
+            animation: spin 1s ease-in-out;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(0); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .unlock-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .unlock-description {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .character-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+        
+        .character-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .character-trait {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        /* Meters */
+        .meters {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .meter {
+            text-align: center;
+        }
+        
+        .meter-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .meter-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .meter-bar {
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .meter-fill {
+            height: 100%;
+            transition: width 0.5s ease, background 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .meter-fill.carbon {
+            background: linear-gradient(90deg, #43e97b 0%, #fa709a 100%);
+        }
+        
+        .meter-fill.happiness {
+            background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%);
+        }
+        
+        .meter-fill.budget {
+            background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);
+        }
+        
+        /* Scenario Card */
+        .scenario-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .scenario-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+        
+        .scenario-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+        
+        .scenario-description {
+            font-size: 1.1em;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        /* Choices */
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .choice-btn {
+            background: white;
+            border: 3px solid #e2e8f0;
+            padding: 25px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .choice-btn:hover {
+            border-color: #667eea;
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .choice-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .choice-info {
+            color: #718096;
+            font-size: 0.95em;
+        }
+        
+        /* EVA Response */
+        .eva-response {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        
+        .eva-avatar {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .eva-text {
+            font-size: 1.1em;
+            color: #2d3748;
+            font-style: italic;
+        }
+        
+        /* Summary */
+        .summary-card {
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .rank-badge {
+            font-size: 3em;
+            margin: 20px 0;
+        }
+        
+        .rank-title {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .rank-description {
+            font-size: 1.1em;
+            color: #4a5568;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .btn-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .progress-tracker {
+            text-align: center;
+            margin: 20px 0;
+            color: #718096;
+            font-size: 1.1em;
+        }
+        
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: background 0.3s ease;
+        }
+        
+        .dot.completed {
+            background: #43e97b;
+        }
+        
+        .dot.current {
+            background: #667eea;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        
+        @media (max-width: 768px) {
+            .game-content {
+                padding: 20px;
+            }
+            
+            .meters, .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .characters {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🌍 Carbon Choice</h1>
+            <p>Every choice shapes your day and your impact</p>
+        </div>
+        
+        <div class="game-content">
+            <!-- Main Menu -->
+            <div id="main-menu" class="screen active">
+                <h2 style="text-align: center; color: #2d3748; margin-bottom: 30px;">Welcome to Carbon Choice</h2>
+                <p style="text-align: center; color: #718096; margin-bottom: 40px; line-height: 1.6;">
+                    Experience a day in the life where every decision matters. Balance your carbon footprint, happiness, and budget through realistic daily scenarios.
+                </p>
+                <div class="btn-group">
+                    <button class="btn" onclick="showScreen('character-select')">Start Game</button>
+                </div>
+            </div>
+            
+            <!-- Character Select -->
+            <div id="character-select" class="screen">
+                <h2 style="text-align: center; color: #2d3748; margin-bottom: 30px;">Choose Your Character</h2>
+                <div class="characters">
+                    <div class="character-card" onclick="selectCharacter('student')">
+                        <div class="character-icon">👨‍🎓</div>
+                        <div class="character-name">Student</div>
+                        <div class="character-trait">Low Budget<br>High Happiness Reset</div>
+                    </div>
+                    <div class="character-card" onclick="selectCharacter('parent')">
+                        <div class="character-icon">👨‍👩‍👧</div>
+                        <div class="character-name">Parent</div>
+                        <div class="character-trait">Time Stress<br>Family Focus</div>
+                    </div>
+                    <div class="character-card" onclick="selectCharacter('worker')">
+                        <div class="character-icon">👔</div>
+                        <div class="character-name">Worker</div>
+                        <div class="character-trait">Higher Budget<br>Higher Carbon</div>
+                    </div>
+                    <div class="character-card locked" id="influencer-card">
+                        <div class="lock-icon">🔒</div>
+                        <div class="character-icon" style="filter: grayscale(100%); opacity: 0.4;">🌟</div>
+                        <div class="character-name">Eco Influencer</div>
+                        <div class="character-trait">??? Special Ability ???<br><span class="unlock-hint">Unlock by earning Eco Champion!</span></div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn" onclick="startDay()" id="start-day-btn" disabled style="opacity: 0.5;">Continue</button>
+                </div>
+            </div>
+            
+            <!-- Daily Goal -->
+            <div id="daily-goal" class="screen">
+                <h2 style="text-align: center; color: #2d3748; margin-bottom: 30px;">Today's Challenge</h2>
+                <div class="scenario-card">
+                    <div class="scenario-icon">🎯</div>
+                    <div class="scenario-title" id="goal-title"></div>
+                    <div class="scenario-description" id="goal-description"></div>
+                </div>
+                <div class="eva-response">
+                    <div class="eva-avatar">🤖 EVA</div>
+                    <div class="eva-text">"Let's see how today goes! Remember, every small choice adds up."</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn" onclick="showScenario()">Start My Day</button>
+                </div>
+            </div>
+            
+            <!-- Gameplay -->
+            <div id="gameplay" class="screen">
+                <div class="progress-tracker">
+                    <div>Decision <span id="current-decision">1</span> of 6</div>
+                    <div class="progress-dots" id="progress-dots"></div>
+                </div>
+                
+                <div class="meters">
+                    <div class="meter">
+                        <div class="meter-icon">🌍</div>
+                        <div class="meter-label">Carbon</div>
+                        <div class="meter-bar">
+                            <div class="meter-fill carbon" id="carbon-bar" style="width: 20%;">20kg</div>
+                        </div>
+                    </div>
+                    <div class="meter">
+                        <div class="meter-icon">😊</div>
+                        <div class="meter-label">Happiness</div>
+                        <div class="meter-bar">
+                            <div class="meter-fill happiness" id="happiness-bar" style="width: 70%;">7/10</div>
+                        </div>
+                    </div>
+                    <div class="meter">
+                        <div class="meter-icon">💰</div>
+                        <div class="meter-label">Budget</div>
+                        <div class="meter-bar">
+                            <div class="meter-fill budget" id="budget-bar" style="width: 60%;">$60</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="scenario-card">
+                    <div class="scenario-icon" id="scenario-icon"></div>
+                    <div class="scenario-title" id="scenario-title"></div>
+                    <div class="scenario-description" id="scenario-description"></div>
+                </div>
+                
+                <div class="choices" id="choices"></div>
+                
+                <div id="eva-feedback" class="eva-response" style="display: none;">
+                    <div class="eva-avatar">🤖 EVA</div>
+                    <div class="eva-text" id="eva-text"></div>
+                </div>
+                
+                <div class="btn-group" id="next-btn-container" style="display: none;">
+                    <button class="btn" onclick="nextScenario()">Continue</button>
+                </div>
+            </div>
+            
+            <!-- End of Day Summary -->
+            <div id="summary" class="screen">
+                <h2 style="text-align: center; color: #2d3748; margin-bottom: 30px;">End of Day Summary</h2>
+                
+                <div class="summary-card">
+                    <div class="rank-badge" id="rank-icon"></div>
+                    <div class="rank-title" id="rank-title"></div>
+                    <div class="rank-description" id="rank-description"></div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="final-carbon"></div>
+                        <div class="stat-label">Total Carbon (kg CO₂)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="final-happiness"></div>
+                        <div class="stat-label">Happiness Level</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="final-budget"></div>
+                        <div class="stat-label">Budget Remaining</div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn" onclick="replay()">🔄 Play Again</button>
+                    <button class="btn btn-secondary" onclick="showScreen('main-menu')">🏠 Main Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            character: null,
+            carbon: 20,
+            happiness: 7,
+            budget: 60,
+            maxBudget: 100,
+            currentScenario: 0,
+            totalScenarios: 6,
+            decisions: [],
+            influencerUnlocked: localStorage.getItem('influencerUnlocked') === 'true'
+        };
+
+        // Character Stats
+        const characters = {
+            student: { carbon: 15, happiness: 8, budget: 40, maxBudget: 40 },
+            parent: { carbon: 25, happiness: 6, budget: 80, maxBudget: 80 },
+            worker: { carbon: 30, happiness: 7, budget: 100, maxBudget: 100 },
+            influencer: { carbon: 10, happiness: 9, budget: 70, maxBudget: 70 }
+        };
+
+        // Daily Goals
+        const dailyGoals = [
+            { title: "Stay Green", description: "Keep your carbon footprint under 50 kg CO₂ today" },
+            { title: "Balance Act", description: "End the day with at least 50% in all three meters" },
+            { title: "Happy Sustainable", description: "Maintain happiness above 6 while keeping carbon under 60 kg" }
+        ];
+        
+        // Check if influencer is unlocked on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            if (gameState.influencerUnlocked) {
+                unlockInfluencer(false); // false = don't show notification
+            }
+        });
+
+        // Scenarios
+        const scenarios = [
+            {
+                icon: "☕",
+                title: "Morning Coffee",
+                description: "Time for your morning caffeine fix. How do you get your coffee?",
+                choices: [
+                    { 
+                        title: "Disposable Cup from Cafe", 
+                        info: "Quick and convenient • $5",
+                        carbon: 3, happiness: 1, budget: -5,
+                        eva: "Easy choice! But those disposable cups add up fast. 🥤"
+                    },
+                    { 
+                        title: "Reusable Cup from Cafe", 
+                        info: "Eco-friendly • $4 (discount!)",
+                        carbon: 1, happiness: 2, budget: -4,
+                        eva: "Nice! The barista smiled at your reusable cup. Small wins! ♻️"
+                    },
+                    { 
+                        title: "Make Coffee at Home", 
+                        info: "Takes 10 extra minutes • $1",
+                        carbon: 0.5, happiness: 1, budget: -1,
+                        eva: "Homemade and low-carbon! You're starting strong. ☕"
+                    }
+                ]
+            },
+            {
+                icon: "🚗",
+                title: "Commute to Campus/Work",
+                description: "How will you get to your destination today?",
+                choices: [
+                    { 
+                        title: "Drive Solo", 
+                        info: "Fastest • 20 minutes • $3 gas",
+                        carbon: 5, happiness: 2, budget: -3,
+                        eva: "Zoom zoom! But that's a lot of solo emissions. 🚙"
+                    },
+                    { 
+                        title: "Take Public Transit", 
+                        info: "45 minutes • $2.50 fare",
+                        carbon: 2, happiness: 0, budget: -2.5,
+                        eva: "Sustainable choice! Though you did miss your podcast time. 🚌"
+                    },
+                    { 
+                        title: "Bike/Walk", 
+                        info: "Takes 50 minutes • Free • Exercise!",
+                        carbon: 0, happiness: 3, budget: 0,
+                        eva: "Zero emissions! Plus those endorphins are kicking in. 🚴"
+                    }
+                ]
+            },
+            {
+                icon: "🍽️",
+                title: "Lunch Decision",
+                description: "It's noon and you're hungry. What's for lunch?",
+                choices: [
+                    { 
+                        title: "Fast Food Burger", 
+                        info: "Quick delivery • $12",
+                        carbon: 6, happiness: 2, budget: -12,
+                        eva: "Satisfying! But beef has a huge carbon footprint. 🍔"
+                    },
+                    { 
+                        title: "Local Salad Bowl", 
+                        info: "Healthy and nearby • $10",
+                        carbon: 2, happiness: 1, budget: -10,
+                        eva: "Fresh and local! Your body and planet thank you. 🥗"
+                    },
+                    { 
+                        title: "Packed Lunch from Home", 
+                        info: "Leftovers • Free",
+                        carbon: 0.5, happiness: 1, budget: 0,
+                        eva: "Waste-free and wallet-friendly! You planned ahead. 🍱"
+                    }
+                ]
+            },
+            {
+                icon: "🛍️",
+                title: "Shopping Impulse",
+                description: "You see something you want. Do you buy it?",
+                choices: [
+                    { 
+                        title: "Buy New Item", 
+                        info: "Treat yourself • $30",
+                        carbon: 8, happiness: 3, budget: -30,
+                        eva: "New stuff feels nice! But production emissions are real. 🛒"
+                    },
+                    { 
+                        title: "Buy Secondhand", 
+                        info: "Thrift find • $10",
+                        carbon: 1, happiness: 2, budget: -10,
+                        eva: "Thrifting wins! Reuse reduces waste big time. 👕"
+                    },
+                    { 
+                        title: "Skip It", 
+                        info: "Save money • $0",
+                        carbon: 0, happiness: -1, budget: 0,
+                        eva: "Showing restraint! Though you looked sad walking past. 💪"
+                    }
+                ]
+            },
+            {
+                icon: "💡",
+                title: "Evening at Home",
+                description: "How do you spend your evening?",
+                choices: [
+                    { 
+                        title: "Stream Shows (AC On)", 
+                        info: "Comfort mode • 3 hours",
+                        carbon: 4, happiness: 2, budget: -5,
+                        eva: "Cozy vibes! But that AC is working overtime. 📺"
+                    },
+                    { 
+                        title: "Read with Natural Light", 
+                        info: "Relaxing • 2 hours",
+                        carbon: 0.5, happiness: 2, budget: 0,
+                        eva: "Peaceful and low-energy! Old school cool. 📚"
+                    },
+                    { 
+                        title: "Go for Evening Walk", 
+                        info: "Fresh air • 1 hour",
+                        carbon: 0, happiness: 3, budget: 0,
+                        eva: "Nature time! Zero emissions and mood boost. 🌳"
+                    }
+                ]
+            },
+            {
+                icon: "🍕",
+                title: "Dinner Time",
+                description: "Last meal of the day. What sounds good?",
+                choices: [
+                    { 
+                        title: "Order Takeout", 
+                        info: "Delivery • $20",
+                        carbon: 7, happiness: 2, budget: -20,
+                        eva: "Delivered goodness! But packaging waste is piling up. 🥡"
+                    },
+                    { 
+                        title: "Cook Simple Meal", 
+                        info: "30 minutes • $8",
+                        carbon: 2, happiness: 2, budget: -8,
+                        eva: "Home-cooked! Less waste, more control. 🍳"
+                    },
+                    { 
+                        title: "Plant-Based Dinner", 
+                        info: "From scratch • $6",
+                        carbon: 1, happiness: 1, budget: -6,
+                        eva: "Plant-powered! Lowest carbon option on the menu. 🥦"
+                    }
+                ]
+            }
+        ];
+
+        // Select Character
+        function selectCharacter(char) {
+            // Check if trying to select locked influencer
+            if (char === 'influencer' && !gameState.influencerUnlocked) {
+                shakeCard();
+                return;
+            }
+            
+            gameState.character = char;
+            const stats = characters[char];
+            gameState.carbon = stats.carbon;
+            gameState.happiness = stats.happiness;
+            gameState.budget = stats.budget;
+            gameState.maxBudget = stats.maxBudget;
+            
+            // Visual feedback
+            document.querySelectorAll('.character-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.character-card').classList.add('selected');
+            
+            document.getElementById('start-day-btn').disabled = false;
+            document.getElementById('start-day-btn').style.opacity = '1';
+        }
+        
+        // Shake locked card when clicked
+        function shakeCard() {
+            const card = document.getElementById('influencer-card');
+            card.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                card.style.animation = '';
+            }, 500);
+        }
+        
+        // Add shake animation to CSS (will add inline)
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Unlock Influencer
+        function unlockInfluencer(showNotification = true) {
+            const card = document.getElementById('influencer-card');
+            card.classList.remove('locked');
+            card.classList.add('unlocked');
+            card.onclick = function() { selectCharacter('influencer'); };
+            
+            // Update the card appearance
+            card.innerHTML = `
+                <div class="character-icon">🌟</div>
+                <div class="character-name">Eco Influencer</div>
+                <div class="character-trait">Eco Expert<br>Happiness from Low Carbon</div>
+            `;
+            
+            gameState.influencerUnlocked = true;
+            localStorage.setItem('influencerUnlocked', 'true');
+            
+            if (showNotification) {
+                showUnlockNotification();
+            }
+        }
+        
+        // Show unlock notification
+        function showUnlockNotification() {
+            const overlay = document.createElement('div');
+            overlay.className = 'unlock-overlay';
+            
+            const notification = document.createElement('div');
+            notification.className = 'unlock-notification';
+            notification.innerHTML = `
+                <div class="unlock-icon-big">🌟</div>
+                <div class="unlock-title">Character Unlocked!</div>
+                <div class="unlock-description">
+                    You've unlocked the <strong>Eco Influencer</strong>!<br>
+                    This character gains happiness when carbon is low and loses it when high.<br>
+                    Perfect for the ultimate eco-conscious playthrough!
+                </div>
+                <button class="btn" onclick="closeUnlockNotification()">Awesome!</button>
+            `;
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(notification);
+        }
+        
+        // Close unlock notification
+        function closeUnlockNotification() {
+            const overlay = document.querySelector('.unlock-overlay');
+            const notification = document.querySelector('.unlock-notification');
+            if (overlay) overlay.remove();
+            if (notification) notification.remove();
+        }
+
+        // Start Day
+        function startDay() {
+            const goal = dailyGoals[Math.floor(Math.random() * dailyGoals.length)];
+            document.getElementById('goal-title').textContent = goal.title;
+            document.getElementById('goal-description').textContent = goal.description;
+            showScreen('daily-goal');
+        }
+
+        // Show Scenario
+        function showScenario() {
+            if (gameState.currentScenario >= gameState.totalScenarios) {
+                showSummary();
+                return;
+            }
+            
+            const scenario = scenarios[gameState.currentScenario];
+            document.getElementById('scenario-icon').textContent = scenario.icon;
+            document.getElementById('scenario-title').textContent = scenario.title;
+            document.getElementById('scenario-description').textContent = scenario.description;
+            
+            // Create choices
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            scenario.choices.forEach((choice, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'choice-btn';
+                btn.innerHTML = `
+                    <div class="choice-title">${choice.title}</div>
+                    <div class="choice-info">${choice.info}</div>
+                `;
+                btn.onclick = () => makeChoice(index);
+                choicesDiv.appendChild(btn);
+            });
+            
+            // Update progress
+            document.getElementById('current-decision').textContent = gameState.currentScenario + 1;
+            updateProgressDots();
+            
+            // Hide feedback
+            document.getElementById('eva-feedback').style.display = 'none';
+            document.getElementById('next-btn-container').style.display = 'none';
+            
+            updateMeters();
+            showScreen('gameplay');
+        }
+
+        // Make Choice
+        function makeChoice(choiceIndex) {
+            const scenario = scenarios[gameState.currentScenario];
+            const choice = scenario.choices[choiceIndex];
+            
+            // Update game state
+            gameState.carbon += choice.carbon;
+            gameState.happiness += choice.happiness;
+            gameState.budget += choice.budget;
+            
+            // Eco Influencer special ability: gains happiness when making low-carbon choices
+            if (gameState.character === 'influencer') {
+                if (choice.carbon <= 1) {
+                    gameState.happiness += 1; // Bonus happiness for eco choices
+                } else if (choice.carbon >= 5) {
+                    gameState.happiness -= 1; // Penalty for high carbon choices
+                }
+            }
+            
+            // Clamp values
+            gameState.carbon = Math.max(0, gameState.carbon);
+            gameState.happiness = Math.max(0, Math.min(10, gameState.happiness));
+            gameState.budget = Math.max(0, Math.min(gameState.maxBudget, gameState.budget));
+            
+            // Store decision
+            gameState.decisions.push({ scenario: scenario.title, choice: choice.title });
+            
+            // Show EVA feedback (with special message for influencer)
+            let evaMessage = choice.eva;
+            if (gameState.character === 'influencer' && choice.carbon <= 1) {
+                evaMessage += " Your followers love this eco-choice! 📱✨";
+            }
+            document.getElementById('eva-text').textContent = evaMessage;
+            document.getElementById('eva-feedback').style.display = 'block';
+            
+            // Hide choices
+            document.getElementById('choices').style.display = 'none';
+            
+            // Show next button
+            document.getElementById('next-btn-container').style.display = 'block';
+            
+            // Update meters with animation
+            updateMeters();
+        }
+
+        // Next Scenario
+        function nextScenario() {
+            gameState.currentScenario++;
+            document.getElementById('choices').style.display = 'flex';
+            showScenario();
+        }
+
+        // Update Meters
+        function updateMeters() {
+            // Carbon (0-100 kg scale)
+            const carbonPercent = Math.min(100, (gameState.carbon / 100) * 100);
+            const carbonBar = document.getElementById('carbon-bar');
+            carbonBar.style.width = carbonPercent + '%';
+            carbonBar.textContent = Math.round(gameState.carbon) + 'kg';
+            
+            // Happiness (0-10 scale)
+            const happinessPercent = (gameState.happiness / 10) * 100;
+            const happinessBar = document.getElementById('happiness-bar');
+            happinessBar.style.width = happinessPercent + '%';
+            happinessBar.textContent = Math.round(gameState.happiness) + '/10';
+            
+            // Budget
+            const budgetPercent = (gameState.budget / gameState.maxBudget) * 100;
+            const budgetBar = document.getElementById('budget-bar');
+            budgetBar.style.width = budgetPercent + '%';
+            budgetBar.textContent = '$' + Math.round(gameState.budget);
+        }
+
+        // Update Progress Dots
+        function updateProgressDots() {
+            const dotsDiv = document.getElementById('progress-dots');
+            dotsDiv.innerHTML = '';
+            for (let i = 0; i < gameState.totalScenarios; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                if (i < gameState.currentScenario) {
+                    dot.classList.add('completed');
+                } else if (i === gameState.currentScenario) {
+                    dot.classList.add('current');
+                }
+                dotsDiv.appendChild(dot);
+            }
+        }
+
+        // Show Summary
+        function showSummary() {
+            // Calculate rank
+            let rank, icon, description;
+            let isEcoChampion = false;
+            
+            if (gameState.carbon < 40 && gameState.happiness >= 6) {
+                rank = "Eco Champion";
+                icon = "🌟";
+                description = "You balanced sustainability with happiness beautifully!";
+                isEcoChampion = true;
+            } else if (gameState.carbon < 60 && gameState.budget > 20) {
+                rank = "Balanced Thinker";
+                icon = "⚖️";
+                description = "You found a decent trade-off between sustainability and comfort.";
+            } else if (gameState.carbon > 70) {
+                rank = "Carbon Overlord";
+                icon = "🏭";
+                description = "You lived large today and the atmosphere knows it.";
+            } else if (gameState.budget < 10) {
+                rank = "Broke but Green";
+                icon = "🌱";
+                description = "Eco-friendly but watch that wallet!";
+            } else {
+                rank = "Eco Rookie";
+                icon = "🌍";
+                description = "You're just becoming aware of your footprint.";
+            }
+            
+            document.getElementById('rank-icon').textContent = icon;
+            document.getElementById('rank-title').textContent = rank;
+            document.getElementById('rank-description').textContent = description;
+            
+            document.getElementById('final-carbon').textContent = Math.round(gameState.carbon) + 'kg';
+            document.getElementById('final-happiness').textContent = Math.round(gameState.happiness) + '/10';
+            document.getElementById('final-budget').textContent = '$' + Math.round(gameState.budget);
+            
+            // Check if should unlock influencer
+            if (isEcoChampion && !gameState.influencerUnlocked) {
+                setTimeout(() => {
+                    unlockInfluencer(true);
+                }, 1500); // Show unlock after 1.5 seconds
+            }
+            
+            showScreen('summary');
+        }
+
+        // Replay
+        function replay() {
+            const wasUnlocked = gameState.influencerUnlocked; // Preserve unlock status
+            gameState = {
+                character: null,
+                carbon: 20,
+                happiness: 7,
+                budget: 60,
+                maxBudget: 100,
+                currentScenario: 0,
+                totalScenarios: 6,
+                decisions: [],
+                influencerUnlocked: wasUnlocked
+            };
+            showScreen('character-select');
+        }
+
+        // Show Screen
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
