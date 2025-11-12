@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carbon Choice - Game Demo</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,59 +14,111 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
         }
         
         .game-container {
-            max-width: 900px;
+            max-width: 950px;
             width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
             overflow: hidden;
+            backdrop-filter: blur(10px);
+            position: relative;
         }
         
         .game-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 40px 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
         }
         
         .game-header h1 {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
         }
         
         .game-header p {
-            opacity: 0.9;
-            font-size: 1.1em;
+            opacity: 0.95;
+            font-size: 1.2em;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
         }
         
         .game-content {
-            padding: 40px;
+            padding: 50px 40px;
         }
         
         /* Screens */
         .screen {
             display: none;
-            animation: fadeIn 0.5s ease-in;
+            animation: fadeInUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
         
         .screen.active {
             display: block;
         }
         
-        @keyframes fadeIn {
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -76,29 +130,50 @@
         .characters {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
+            gap: 25px;
+            margin: 40px 0;
         }
         
         .character-card {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            padding: 30px;
-            border-radius: 15px;
+            padding: 35px 25px;
+            border-radius: 20px;
             text-align: center;
             cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 3px solid transparent;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 4px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .character-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .character-card:hover::before {
+            opacity: 1;
         }
         
         .character-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
         }
         
         .character-card.selected {
             border-color: #ffd700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            box-shadow: 
+                0 20px 40px rgba(255, 215, 0, 0.4),
+                0 0 30px rgba(255, 215, 0, 0.6);
+            transform: translateY(-10px);
         }
         
         .character-card:nth-child(2) {
@@ -110,43 +185,513 @@
         }
         
         .character-card.locked {
-            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
             cursor: not-allowed;
             position: relative;
-            overflow: visible;
         }
         
         .character-card.locked:hover {
-            transform: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
         
         .character-card.unlocked {
             background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
             animation: unlockPulse 0.8s ease-in-out;
-            cursor: pointer;
         }
         
         @keyframes unlockPulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            25% { transform: scale(0.95); }
+            50% { transform: scale(1.1); }
+            75% { transform: scale(0.98); }
         }
         
         .lock-icon {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1.5em;
+            top: 15px;
+            right: 15px;
+            font-size: 1.8em;
             z-index: 10;
+            animation: wiggle 2s ease-in-out infinite;
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        .character-icon {
+            font-size: 5em;
+            margin-bottom: 15px;
+            display: block;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .character-name {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .character-trait {
+            font-size: 0.95em;
+            opacity: 0.95;
+            font-weight: 300;
+            line-height: 1.5;
         }
         
         .unlock-hint {
-            font-size: 0.85em;
-            color: rgba(255,255,255,0.9);
+            font-size: 0.8em;
             display: block;
-            margin-top: 5px;
+            margin-top: 8px;
+            font-weight: 400;
         }
         
+        /* Meters */
+        .meters {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 40px 0;
+        }
+        
+        .meter {
+            text-align: center;
+        }
+        
+        .meter-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .meter:nth-child(2) .meter-icon {
+            animation-delay: 0.3s;
+        }
+        
+        .meter:nth-child(3) .meter-icon {
+            animation-delay: 0.6s;
+        }
+        
+        .meter-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        .meter-bar {
+            height: 35px;
+            background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1) inset;
+        }
+        
+        .meter-fill {
+            height: 100%;
+            transition: width 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), background 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95em;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .meter-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+        
+        .meter-fill.carbon {
+            background: linear-gradient(90deg, #43e97b 0%, #fa709a 100%);
+        }
+        
+        .meter-fill.happiness {
+            background: linear-gradient(90deg, #fbc2eb 0%, #a6c1ee 100%);
+        }
+        
+        .meter-fill.budget {
+            background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);
+        }
+        
+        /* Scenario Card */
+        .scenario-card {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe0b3 100%);
+            padding: 40px;
+            border-radius: 25px;
+            margin: 25px 0;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scenario-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .scenario-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            display: inline-block;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.15));
+            animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .scenario-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .scenario-description {
+            font-size: 1.15em;
+            color: #4a5568;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Choices */
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 35px 0;
+        }
+        
+        .choice-btn {
+            background: white;
+            border: 3px solid #e2e8f0;
+            padding: 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .choice-btn::before {
+            content: '→';
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%) translateX(10px);
+            font-size: 2em;
+            color: #667eea;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .choice-btn:hover {
+            border-color: #667eea;
+            transform: translateX(15px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+            background: linear-gradient(90deg, #ffffff 0%, #f7fafc 100%);
+        }
+        
+        .choice-btn:hover::before {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+        
+        .choice-btn:active {
+            transform: translateX(10px) scale(0.98);
+        }
+        
+        .choice-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .choice-info {
+            color: #718096;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+        
+        /* EVA Response */
+        .eva-response {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 25px 0;
+            border-left: 6px solid #00acc1;
+            box-shadow: 0 10px 25px rgba(0, 172, 193, 0.15);
+            animation: slideInLeft 0.5s ease-out;
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .eva-avatar {
+            font-size: 2.5em;
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: wave 1s ease-in-out;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+        
+        .eva-text {
+            font-size: 1.15em;
+            color: #2d3748;
+            font-style: italic;
+            line-height: 1.6;
+        }
+        
+        /* Summary */
+        .summary-card {
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+            padding: 45px;
+            border-radius: 25px;
+            margin: 25px 0;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .summary-card::before {
+            content: '✨';
+            position: absolute;
+            font-size: 10em;
+            opacity: 0.1;
+            top: -20px;
+            right: -20px;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.1; transform: rotate(0deg); }
+            50% { opacity: 0.2; transform: rotate(15deg); }
+        }
+        
+        .rank-badge {
+            font-size: 5em;
+            margin: 25px 0;
+            display: inline-block;
+            animation: spinIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes spinIn {
+            0% { transform: rotate(-360deg) scale(0); opacity: 0; }
+            100% { transform: rotate(0deg) scale(1); opacity: 1; }
+        }
+        
+        .rank-title {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .rank-description {
+            font-size: 1.2em;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 40px 0;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-10px);
+        }
+        
+        .stat-value {
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            color: #718096;
+            margin-top: 10px;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+        
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 45px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.15em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            margin: 10px;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 10px 25px rgba(240, 147, 251, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-group {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .progress-tracker {
+            text-align: center;
+            margin: 25px 0;
+            color: #718096;
+            font-size: 1.15em;
+            font-weight: 500;
+        }
+        
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .dot.completed {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            box-shadow: 0 0 15px rgba(67, 233, 123, 0.5);
+        }
+        
+        .dot.current {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: pulse-dot 1.5s infinite;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+        }
+        
+        /* Unlock notification */
         .unlock-notification {
             position: fixed;
             top: 50%;
@@ -154,18 +699,18 @@
             transform: translate(-50%, -50%);
             background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
             color: #2d3748;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.4);
             text-align: center;
             z-index: 1000;
-            animation: popIn 0.5s ease-out;
-            max-width: 500px;
+            animation: popInBig 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 550px;
         }
         
-        @keyframes popIn {
+        @keyframes popInBig {
             0% {
-                transform: translate(-50%, -50%) scale(0.5);
+                transform: translate(-50%, -50%) scale(0.3);
                 opacity: 0;
             }
             100% {
@@ -180,305 +725,57 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             z-index: 999;
             animation: fadeIn 0.3s ease-in;
+            backdrop-filter: blur(5px);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .unlock-icon-big {
-            font-size: 5em;
-            margin-bottom: 20px;
-            animation: spin 1s ease-in-out;
+            font-size: 6em;
+            margin-bottom: 25px;
+            animation: spinBounce 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg) scale(0); }
-            50% { transform: rotate(180deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
+        @keyframes spinBounce {
+            0% { transform: rotate(-360deg) scale(0); }
+            60% { transform: rotate(10deg) scale(1.2); }
+            80% { transform: rotate(-5deg) scale(0.95); }
+            100% { transform: rotate(0deg) scale(1); }
         }
         
         .unlock-title {
-            font-size: 2em;
-            font-weight: bold;
-            margin-bottom: 15px;
+            font-size: 2.3em;
+            font-weight: 800;
+            margin-bottom: 20px;
         }
         
         .unlock-description {
-            font-size: 1.1em;
-            margin-bottom: 25px;
-            line-height: 1.6;
+            font-size: 1.15em;
+            margin-bottom: 30px;
+            line-height: 1.7;
         }
         
-        .character-icon {
-            font-size: 4em;
-            margin-bottom: 10px;
-        }
-        
-        .character-name {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .character-trait {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        
-        /* Meters */
-        .meters {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .meter {
+        h2 {
             text-align: center;
-        }
-        
-        .meter-icon {
-            font-size: 2em;
-            margin-bottom: 5px;
-        }
-        
-        .meter-label {
-            font-weight: 600;
             color: #2d3748;
-            margin-bottom: 10px;
-        }
-        
-        .meter-bar {
-            height: 30px;
-            background: #e2e8f0;
-            border-radius: 15px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .meter-fill {
-            height: 100%;
-            transition: width 0.5s ease, background 0.5s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .meter-fill.carbon {
-            background: linear-gradient(90deg, #43e97b 0%, #fa709a 100%);
-        }
-        
-        .meter-fill.happiness {
-            background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%);
-        }
-        
-        .meter-fill.budget {
-            background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);
-        }
-        
-        /* Scenario Card */
-        .scenario-card {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            padding: 30px;
-            border-radius: 15px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .scenario-icon {
-            font-size: 4em;
-            margin-bottom: 15px;
-        }
-        
-        .scenario-title {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 15px;
-        }
-        
-        .scenario-description {
-            font-size: 1.1em;
-            color: #4a5568;
-            line-height: 1.6;
-        }
-        
-        /* Choices */
-        .choices {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin: 30px 0;
-        }
-        
-        .choice-btn {
-            background: white;
-            border: 3px solid #e2e8f0;
-            padding: 25px;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: left;
-        }
-        
-        .choice-btn:hover {
-            border-color: #667eea;
-            transform: translateX(10px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
-        }
-        
-        .choice-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 8px;
-        }
-        
-        .choice-info {
-            color: #718096;
-            font-size: 0.95em;
-        }
-        
-        /* EVA Response */
-        .eva-response {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px 0;
-            border-left: 5px solid #667eea;
-        }
-        
-        .eva-avatar {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        
-        .eva-text {
-            font-size: 1.1em;
-            color: #2d3748;
-            font-style: italic;
-        }
-        
-        /* Summary */
-        .summary-card {
-            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
-            padding: 30px;
-            border-radius: 15px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .rank-badge {
-            font-size: 3em;
-            margin: 20px 0;
-        }
-        
-        .rank-title {
-            font-size: 2em;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-        
-        .rank-description {
-            font-size: 1.1em;
-            color: #4a5568;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .stat-box {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        .stat-label {
-            color: #718096;
-            margin-top: 5px;
-        }
-        
-        /* Buttons */
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 40px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .btn-group {
-            text-align: center;
-            margin-top: 30px;
-        }
-        
-        .progress-tracker {
-            text-align: center;
-            margin: 20px 0;
-            color: #718096;
-            font-size: 1.1em;
-        }
-        
-        .progress-dots {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            transition: background 0.3s ease;
-        }
-        
-        .dot.completed {
-            background: #43e97b;
-        }
-        
-        .dot.current {
-            background: #667eea;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3); }
+            margin-bottom: 35px;
+            font-size: 2.2em;
+            font-weight: 700;
         }
         
         @media (max-width: 768px) {
             .game-content {
-                padding: 20px;
+                padding: 30px 20px;
+            }
+            
+            .game-header h1 {
+                font-size: 2em;
             }
             
             .meters, .stats-grid {
@@ -487,6 +784,14 @@
             
             .characters {
                 grid-template-columns: 1fr;
+            }
+            
+            .choice-btn {
+                padding: 20px;
+            }
+            
+            .scenario-card {
+                padding: 30px 20px;
             }
         }
     </style>
@@ -501,18 +806,18 @@
         <div class="game-content">
             <!-- Main Menu -->
             <div id="main-menu" class="screen active">
-                <h2 style="text-align: center; color: #2d3748; margin-bottom: 30px;">Welcome to Carbon Choice</h2>
-                <p style="text-align: center; color: #718096; margin-bottom: 40px; line-height: 1.6;">
+                <h2>Welcome to Carbon Choice</h2>
+                <p style="text-align: center; color: #718096; margin-bottom: 50px; line-height: 1.8; font-size: 1.1em;">
                     Experience a day in the life where every decision matters. Balance your carbon footprint, happiness, and budget through realistic daily scenarios.
                 </p>
                 <div class="btn-group">
-                    <button class="btn" onclick="showScreen('character-select')">Start Game</button>
+                    <button class="btn" onclick="showScreen('character-select')">🎮 Start Game</button>
                 </div>
             </div>
             
             <!-- Character Select -->
             <div id="character-select" class="screen">
-                <h2 style="text-align: center; color: #2d3748; margin-bottom: 30px;">Choose Your Character</h2>
+                <h2>Choose Your Character</h2>
                 <div class="characters">
                     <div class="character-card" onclick="selectCharacter('student')">
                         <div class="character-icon">👨‍🎓</div>
@@ -533,17 +838,17 @@
                         <div class="lock-icon">🔒</div>
                         <div class="character-icon" style="filter: grayscale(100%); opacity: 0.4;">🌟</div>
                         <div class="character-name">Eco Influencer</div>
-                        <div class="character-trait">??? Special Ability ???<br><span class="unlock-hint">Unlock by earning Eco Champion!</span></div>
+                        <div class="character-trait">??? Special Ability ???<br><span class="unlock-hint">🏆 Unlock by earning Eco Champion!</span></div>
                     </div>
                 </div>
                 <div class="btn-group">
-                    <button class="btn" onclick="startDay()" id="start-day-btn" disabled style="opacity: 0.5;">Continue</button>
+                    <button class="btn" onclick="startDay()" id="start-day-btn" disabled>Continue →</button>
                 </div>
             </div>
             
             <!-- Daily Goal -->
             <div id="daily-goal" class="screen">
-                <h2 style="text-align: center; color: #2d3748; margin-bottom: 30px;">Today's Challenge</h2>
+                <h2>Today's Challenge</h2>
                 <div class="scenario-card">
                     <div class="scenario-icon">🎯</div>
                     <div class="scenario-title" id="goal-title"></div>
@@ -551,10 +856,10 @@
                 </div>
                 <div class="eva-response">
                     <div class="eva-avatar">🤖 EVA</div>
-                    <div class="eva-text">"Let's see how today goes! Remember, every small choice adds up."</div>
+                    <div class="eva-text">"Let's see how today goes! Remember, every small choice adds up. I'll be here to guide you along the way."</div>
                 </div>
                 <div class="btn-group">
-                    <button class="btn" onclick="showScenario()">Start My Day</button>
+                    <button class="btn" onclick="showScenario()">Start My Day →</button>
                 </div>
             </div>
             
@@ -603,13 +908,13 @@
                 </div>
                 
                 <div class="btn-group" id="next-btn-container" style="display: none;">
-                    <button class="btn" onclick="nextScenario()">Continue</button>
+                    <button class="btn" onclick="nextScenario()">Next →</button>
                 </div>
             </div>
             
             <!-- End of Day Summary -->
             <div id="summary" class="screen">
-                <h2 style="text-align: center; color: #2d3748; margin-bottom: 30px;">End of Day Summary</h2>
+                <h2>End of Day Summary</h2>
                 
                 <div class="summary-card">
                     <div class="rank-badge" id="rank-icon"></div>
@@ -672,7 +977,7 @@
         // Check if influencer is unlocked on page load
         window.addEventListener('DOMContentLoaded', function() {
             if (gameState.influencerUnlocked) {
-                unlockInfluencer(false); // false = don't show notification
+                unlockInfluencer(false);
             }
         });
 
@@ -832,7 +1137,6 @@
 
         // Select Character
         function selectCharacter(char) {
-            // Check if trying to select locked influencer
             if (char === 'influencer' && !gameState.influencerUnlocked) {
                 shakeCard();
                 return;
@@ -845,7 +1149,6 @@
             gameState.budget = stats.budget;
             gameState.maxBudget = stats.maxBudget;
             
-            // Visual feedback
             document.querySelectorAll('.character-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -854,8 +1157,7 @@
             document.getElementById('start-day-btn').disabled = false;
             document.getElementById('start-day-btn').style.opacity = '1';
         }
-        
-        // Shake locked card when clicked
+
         function shakeCard() {
             const card = document.getElementById('influencer-card');
             card.style.animation = 'shake 0.5s';
@@ -863,8 +1165,7 @@
                 card.style.animation = '';
             }, 500);
         }
-        
-        // Add shake animation to CSS (will add inline)
+
         const style = document.createElement('style');
         style.textContent = `
             @keyframes shake {
@@ -874,15 +1175,13 @@
             }
         `;
         document.head.appendChild(style);
-        
-        // Unlock Influencer
+
         function unlockInfluencer(showNotification = true) {
             const card = document.getElementById('influencer-card');
             card.classList.remove('locked');
             card.classList.add('unlocked');
             card.onclick = function() { selectCharacter('influencer'); };
             
-            // Update the card appearance
             card.innerHTML = `
                 <div class="character-icon">🌟</div>
                 <div class="character-name">Eco Influencer</div>
@@ -896,8 +1195,7 @@
                 showUnlockNotification();
             }
         }
-        
-        // Show unlock notification
+
         function showUnlockNotification() {
             const overlay = document.createElement('div');
             overlay.className = 'unlock-overlay';
@@ -912,14 +1210,13 @@
                     This character gains happiness when carbon is low and loses it when high.<br>
                     Perfect for the ultimate eco-conscious playthrough!
                 </div>
-                <button class="btn" onclick="closeUnlockNotification()">Awesome!</button>
+                <button class="btn" onclick="closeUnlockNotification()">Awesome! 🎉</button>
             `;
             
             document.body.appendChild(overlay);
             document.body.appendChild(notification);
         }
-        
-        // Close unlock notification
+
         function closeUnlockNotification() {
             const overlay = document.querySelector('.unlock-overlay');
             const notification = document.querySelector('.unlock-notification');
@@ -927,7 +1224,6 @@
             if (notification) notification.remove();
         }
 
-        // Start Day
         function startDay() {
             const goal = dailyGoals[Math.floor(Math.random() * dailyGoals.length)];
             document.getElementById('goal-title').textContent = goal.title;
@@ -935,7 +1231,6 @@
             showScreen('daily-goal');
         }
 
-        // Show Scenario
         function showScenario() {
             if (gameState.currentScenario >= gameState.totalScenarios) {
                 showSummary();
@@ -947,7 +1242,6 @@
             document.getElementById('scenario-title').textContent = scenario.title;
             document.getElementById('scenario-description').textContent = scenario.description;
             
-            // Create choices
             const choicesDiv = document.getElementById('choices');
             choicesDiv.innerHTML = '';
             scenario.choices.forEach((choice, index) => {
@@ -961,11 +1255,9 @@
                 choicesDiv.appendChild(btn);
             });
             
-            // Update progress
             document.getElementById('current-decision').textContent = gameState.currentScenario + 1;
             updateProgressDots();
             
-            // Hide feedback
             document.getElementById('eva-feedback').style.display = 'none';
             document.getElementById('next-btn-container').style.display = 'none';
             
@@ -973,34 +1265,28 @@
             showScreen('gameplay');
         }
 
-        // Make Choice
         function makeChoice(choiceIndex) {
             const scenario = scenarios[gameState.currentScenario];
             const choice = scenario.choices[choiceIndex];
             
-            // Update game state
             gameState.carbon += choice.carbon;
             gameState.happiness += choice.happiness;
             gameState.budget += choice.budget;
             
-            // Eco Influencer special ability: gains happiness when making low-carbon choices
             if (gameState.character === 'influencer') {
                 if (choice.carbon <= 1) {
-                    gameState.happiness += 1; // Bonus happiness for eco choices
+                    gameState.happiness += 1;
                 } else if (choice.carbon >= 5) {
-                    gameState.happiness -= 1; // Penalty for high carbon choices
+                    gameState.happiness -= 1;
                 }
             }
             
-            // Clamp values
             gameState.carbon = Math.max(0, gameState.carbon);
             gameState.happiness = Math.max(0, Math.min(10, gameState.happiness));
             gameState.budget = Math.max(0, Math.min(gameState.maxBudget, gameState.budget));
             
-            // Store decision
             gameState.decisions.push({ scenario: scenario.title, choice: choice.title });
             
-            // Show EVA feedback (with special message for influencer)
             let evaMessage = choice.eva;
             if (gameState.character === 'influencer' && choice.carbon <= 1) {
                 evaMessage += " Your followers love this eco-choice! 📱✨";
@@ -1008,45 +1294,35 @@
             document.getElementById('eva-text').textContent = evaMessage;
             document.getElementById('eva-feedback').style.display = 'block';
             
-            // Hide choices
             document.getElementById('choices').style.display = 'none';
-            
-            // Show next button
             document.getElementById('next-btn-container').style.display = 'block';
             
-            // Update meters with animation
             updateMeters();
         }
 
-        // Next Scenario
         function nextScenario() {
             gameState.currentScenario++;
             document.getElementById('choices').style.display = 'flex';
             showScenario();
         }
 
-        // Update Meters
         function updateMeters() {
-            // Carbon (0-100 kg scale)
             const carbonPercent = Math.min(100, (gameState.carbon / 100) * 100);
             const carbonBar = document.getElementById('carbon-bar');
             carbonBar.style.width = carbonPercent + '%';
             carbonBar.textContent = Math.round(gameState.carbon) + 'kg';
             
-            // Happiness (0-10 scale)
             const happinessPercent = (gameState.happiness / 10) * 100;
             const happinessBar = document.getElementById('happiness-bar');
             happinessBar.style.width = happinessPercent + '%';
             happinessBar.textContent = Math.round(gameState.happiness) + '/10';
             
-            // Budget
             const budgetPercent = (gameState.budget / gameState.maxBudget) * 100;
             const budgetBar = document.getElementById('budget-bar');
             budgetBar.style.width = budgetPercent + '%';
             budgetBar.textContent = '$' + Math.round(gameState.budget);
         }
 
-        // Update Progress Dots
         function updateProgressDots() {
             const dotsDiv = document.getElementById('progress-dots');
             dotsDiv.innerHTML = '';
@@ -1062,9 +1338,7 @@
             }
         }
 
-        // Show Summary
         function showSummary() {
-            // Calculate rank
             let rank, icon, description;
             let isEcoChampion = false;
             
@@ -1099,19 +1373,17 @@
             document.getElementById('final-happiness').textContent = Math.round(gameState.happiness) + '/10';
             document.getElementById('final-budget').textContent = '$' + Math.round(gameState.budget);
             
-            // Check if should unlock influencer
             if (isEcoChampion && !gameState.influencerUnlocked) {
                 setTimeout(() => {
                     unlockInfluencer(true);
-                }, 1500); // Show unlock after 1.5 seconds
+                }, 1500);
             }
             
             showScreen('summary');
         }
 
-        // Replay
         function replay() {
-            const wasUnlocked = gameState.influencerUnlocked; // Preserve unlock status
+            const wasUnlocked = gameState.influencerUnlocked;
             gameState = {
                 character: null,
                 carbon: 20,
@@ -1126,7 +1398,6 @@
             showScreen('character-select');
         }
 
-        // Show Screen
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
